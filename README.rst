@@ -115,13 +115,13 @@ Related Work
 
 .. |CI| image:: https://img.shields.io/circleci/project/github
    /dave-shawley/divak-tornado.svg
-   :target: https://github.com/dave-shawley/divak-tornado
+   :target: https://circleci.com/gh/dave-shawley/divak-tornado
 .. |CodeClimate| image:: https://codeclimate.com/github/dave-shawley
    /divak-tornado/badges/gpa.svg
-   :target: https://codeclimate.com/github/dave-shawley/divak-tornado/
-.. |Coverage| image:: https://coveralls.io/repos/dave-shawley
-   /divak-tornado/badge.svg
-   :target: https://coveralls.io/repos/dave-shawley/divak-tornado
+   :target: https://codeclimate.com/github/dave-shawley/divak-tornado
+.. |Coverage| image:: https://img.shields.io/codecov/c/github/dave-shawley
+   /divak-tornado.svg
+   :target: https://codecov.io/gh/dave-shawley/divak-tornado
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/divak-tornado
    /badge/?version=stable
    :target: https://divak-tornado.readthedocs.io/
