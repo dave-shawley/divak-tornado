@@ -1,0 +1,5 @@
+====================
+Distribution License
+====================
+
+.. include:: ../LICENSE

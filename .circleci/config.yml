@@ -1,0 +1,29 @@
+version: '2'
+
+macros: &TEST-STEPS
+  - checkout
+  - run: |
+      sudo pip install -r requires/testing.txt codecov
+      nosetests --with-coverage
+      codecov
+
+jobs:
+
+  python2-test:
+    docker:
+      - image: circleci/python:2
+    steps:
+      <<: *TEST-STEPS
+
+  python3-test:
+    docker:
+      - image: circleci/python:3
+    steps:
+      <<: *TEST-STEPS
+
+workflows:
+  version: 2
+  build-workflow:
+      jobs:
+        - python2-test
+        - python3-test
