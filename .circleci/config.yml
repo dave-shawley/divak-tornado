@@ -70,6 +70,7 @@ jobs:
     docker:
       - image: circleci/python:3
     steps:
+      - checkout
       - run: |
           sudo pip install --upgrade readme_renderer twine wheel
           ./setup.py check -r -s
@@ -92,9 +93,10 @@ workflows:
           requires:
             - python2-test
             - python3-test
-      - distribute-tag:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /.*/
+       - distribute-tag
+#      - distribute-tag:
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /.*/
