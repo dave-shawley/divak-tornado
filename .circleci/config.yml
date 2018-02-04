@@ -95,8 +95,8 @@ workflows:
             - python3-test
       - distribute-tag:
           context: org-global
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /.*/
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
