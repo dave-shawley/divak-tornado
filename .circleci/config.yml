@@ -4,6 +4,8 @@ jobs:
 
   build:
     working_directory: ~/divak
+    docker:
+      - image: circleci/python:3
     steps:
       - run: |
           mkdir -p tmp/
