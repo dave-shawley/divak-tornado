@@ -66,10 +66,10 @@ workflows:
   build-workflow:
     jobs:
       - build
-      - python2-test
+      - python2-test:
           requires:
             - build
-      - python3-test
+      - python3-test:
           requires:
             - build
       - upload-coverage:
