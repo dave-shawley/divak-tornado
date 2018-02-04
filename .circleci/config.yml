@@ -11,7 +11,6 @@ jobs:
           mkdir -p tmp/
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./tmp/cc-test-reporter
           chmod +x ./tmp/cc-test-reporter
-          mkdir build
       - persist_to_workspace:
           root: tmp
           paths:
@@ -26,6 +25,7 @@ jobs:
       - attach_workspace:
           at: ~/divak/tmp
       - run: |
+          mkdir build
           sudo pip install -r requires/testing.txt codecov
           nosetests --with-coverage --cover-xml --cover-xml-file coverage.xml
           ./tmp/cc-test-reporter format-coverage -t coverage.py -o tmp/python2-coverage.json
@@ -44,6 +44,7 @@ jobs:
       - attach_workspace:
           at: ~/divak/tmp
       - run: |
+          mkdir build
           sudo pip install -r requires/testing.txt codecov
           nosetests --with-coverage --cover-xml --cover-xml-file coverage.xml
           ./tmp/cc-test-reporter format-coverage -t coverage.py -o tmp/python3-coverage.json
