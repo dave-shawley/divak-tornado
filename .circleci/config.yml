@@ -26,7 +26,7 @@ jobs:
           at: ~/divak/tmp
       - run: |
           sudo pip install -r requires/testing.txt codecov
-          nosetests --with-coverage
+          nosetests --with-coverage --cover-xml --cover-xml-file coverage.xml
           ./tmp/cc-test-reporter format-coverage -t coverage.py -o tmp/python2-coverage.json
           codecov
       - persist_to_workspace:
@@ -44,7 +44,7 @@ jobs:
           at: ~/divak/tmp
       - run: |
           sudo pip install -r requires/testing.txt codecov
-          nosetests --with-coverage
+          nosetests --with-coverage --cover-xml --cover-xml-file coverage.xml
           ./tmp/cc-test-reporter format-coverage -t coverage.py -o tmp/python3-coverage.json
           codecov
       - persist_to_workspace:
