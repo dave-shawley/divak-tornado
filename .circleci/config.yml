@@ -63,7 +63,7 @@ jobs:
           at: ~/divak/tmp
       - run: |
           ./tmp/cc-test-reporter sum-coverage tmp/*-coverage.json -p 2 -o tmp/codeclimate-total.json
-          ./tmp/cc-test-reporter upload-coverage -i tmp/codeclimage-total.json
+          ./tmp/cc-test-reporter upload-coverage -i tmp/codeclimate-total.json
 
 workflows:
   version: 2
