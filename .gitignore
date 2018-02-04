@@ -2,6 +2,7 @@ build/
 .cache/
 dist/
 env/
+.coverage
 .python_history
 *.pyc
 *.egg-info
