@@ -93,9 +93,8 @@ workflows:
           requires:
             - python2-test
             - python3-test
-      - distribute-tag
-
-#      - distribute-tag:
+      - distribute-tag:
+          context: org-global
 #          filters:
 #            branches:
 #              ignore: /.*/
