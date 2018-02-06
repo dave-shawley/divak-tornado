@@ -3,6 +3,8 @@
 .. toctree::
    :hidden:
 
+   tracing
+   api
    license
    contributing
    changelog

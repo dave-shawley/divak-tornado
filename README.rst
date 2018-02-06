@@ -94,6 +94,7 @@ determines how frequently to sample requests.
          self.set_divak_sample_probability(1.0 / 1000.0)
          self.add_divak_reporter(
             divak.api.ZipkinReporter('http://127.0.0.1:9411/api/v2'))
+         self.add_divak_propagator(divak.api.ZipkinPropagation())
 
 This example will result in `zipkin`_ tracing for ``GET /`` requests which
 record spans for the database query and each HTTP API call.
