@@ -1,6 +1,9 @@
+import logging
 import uuid
 
-from tornado import web
+from tornado import gen, web
+
+import divak.internals
 
 
 class Recorder(web.Application):
@@ -8,6 +11,7 @@ class Recorder(web.Application):
 
     def __init__(self, *args, **kwargs):
         super(Recorder, self).__init__(*args, **kwargs)
+        self.add_transform(divak.internals.EnsureRequestIdTransformer)
 
     def set_divak_service(self, service_name):
         """
@@ -134,6 +138,9 @@ class HeaderRelayTransformer(object):
 
         """
         self._header_value = request.headers.get(self._header_name, None)
+        if self._header_value is None and self._value_factory is not None:
+            self._header_value = str(self._value_factory())
+        request.divak_request_id = self._header_value
         return self
 
     def transform_first_chunk(self, status_code, headers, chunk,
@@ -152,8 +159,6 @@ class HeaderRelayTransformer(object):
         remaining parameters are passed through as-is.
 
         """
-        if self._header_value is None and self._value_factory is not None:
-            self._header_value = str(self._value_factory())
         if self._header_value is not None:
             headers.setdefault(self._header_name, self._header_value)
         return status_code, headers, chunk
@@ -170,3 +175,53 @@ class HeaderRelayTransformer(object):
 
         """
         return chunk
+
+
+class Logger(divak.internals.DivakTagged, web.RequestHandler):
+    """
+    Imbues a :class:`tornado.web.RequestHandler` with a contextual logger.
+
+    This class adds a ``logger`` attribute that inserts divak tags into
+    the logging record.  Tags added by calling :meth:`.add_divak_tag` are
+    automatically made available in log messages.  The ``divak_request_id``
+    value is guaranteed to be available in all log messages provided that
+    you are using :class:`.Application` in your application's class list.
+
+    The ``logger`` attribute is set in :meth:`.prepare` and will wrap
+    an existing ``logger`` attribute or create a new one using the class
+    name as the logger name.  You *SHOULD* create an appropriately named
+    :class:`logging.Logger` instance in your :meth:`initialize` method
+    to effectively use this class.
+
+    .. attribute:: logger
+
+       A :class:`logging.LoggerAdapter` that inserts divak tags into log
+       records using the ``extra`` dict.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        self._logging_context = {}
+        super(Logger, self).__init__(*args, **kwargs)
+
+    def initialize(self):
+        self._logging_context.clear()
+        super(Logger, self).initialize()
+
+    @gen.coroutine
+    def prepare(self):
+        if hasattr(self, 'logger'):
+            logger = self.logger
+        else:
+            logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.LoggerAdapter(logger, self._logging_context)
+        self.add_divak_tag('divak_request_id', self.request.divak_request_id)
+
+        maybe_future = super(Logger, self).prepare()
+        if maybe_future:  # pragma: no cover -- pure paranoia
+            yield maybe_future
+
+    def add_divak_tag(self, name, value):
+        super(Logger, self).add_divak_tag(name, value)
+        if value is not None:
+            self._logging_context[name] = value

@@ -1,6 +1,10 @@
+import logging
+import uuid
+
 from tornado import testing
 
 import divak.api
+import divak.testing
 import tests.application
 
 
@@ -37,3 +41,14 @@ class RequestIdPropagationTests(testing.AsyncHTTPTestCase):
         response = self.fetch('/trace?status=500&raise')
         self.assertEqual(response.code, 500)
         self.assertIsNotNone(response.headers.get('Request-Id'))
+
+    def test_that_log_messages_have_request_ids(self):
+        recorder = divak.testing.RecordingLogHandler()
+        logger = logging.getLogger('TracedHandler')
+        logger.addHandler(recorder)
+
+        request_id = str(uuid.uuid4())
+        self.fetch('/trace', headers={'Request-Id': request_id})
+        self.assertGreater(len(recorder.records), 0)
+        for record in recorder.records:
+            self.assertEqual(record.divak_request_id, request_id)
