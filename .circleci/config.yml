@@ -54,6 +54,19 @@ jobs:
           paths:
             - python3-coverage.json
 
+  tox:
+    working_directory: ~/divak
+    docker:
+      - image: circleci/python:3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/divak/tmp
+      - run: |
+          mkdir build
+          sudo pip install tox
+          tox
+
   upload-coverage:
     working_directory: ~/divak
     docker:
@@ -87,6 +100,9 @@ workflows:
           requires:
             - build
       - python3-test:
+          requires:
+            - build
+      - tox:
           requires:
             - build
       - upload-coverage:

@@ -45,12 +45,8 @@ class AlwaysSampleSampler(object):
     pass
 
 
-class RequestTracker(object):
+class RequestTracker(divak.internals.DivakTagged):
     pass
-
-
-class NullReporter(object):
-    """Reporter that does nothing."""
 
 
 class RequestIdPropagator(object):
@@ -160,7 +156,10 @@ class HeaderRelayTransformer(object):
 
         """
         if self._header_value is not None:
-            headers.setdefault(self._header_name, self._header_value)
+            # would like to use setdefault but HTTPHeaders does
+            # not support it in tornado 4.3
+            if headers.get(self._header_name, None) is None:
+                headers[self._header_name] = self._header_value
         return status_code, headers, chunk
 
     def transform_chunk(self, chunk, include_footers):
