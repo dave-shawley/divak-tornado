@@ -3,7 +3,7 @@
 .. toctree::
    :hidden:
 
-   tracing
+   users-guide
    api
    license
    contributing
