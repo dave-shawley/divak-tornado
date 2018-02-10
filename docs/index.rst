@@ -3,6 +3,8 @@
 .. toctree::
    :hidden:
 
+   users-guide
+   api
    license
    contributing
    changelog

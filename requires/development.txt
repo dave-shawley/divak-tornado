@@ -1,3 +1,4 @@
 -r testing.txt
 -r installation.txt
 sphinx==1.6.6
+tox==2.9.1

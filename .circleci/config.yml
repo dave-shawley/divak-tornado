@@ -26,7 +26,7 @@ jobs:
           at: ~/divak/tmp
       - run: |
           mkdir build
-          sudo pip install -r requires/testing.txt codecov
+          sudo pip install -r requires/testing.txt -r requires/installation.txt codecov
           nosetests --with-coverage --cover-xml --cover-xml-file coverage.xml
           ./tmp/cc-test-reporter format-coverage -t coverage.py -o tmp/python2-coverage.json
           codecov
@@ -45,7 +45,7 @@ jobs:
           at: ~/divak/tmp
       - run: |
           mkdir build
-          sudo pip install -r requires/testing.txt codecov
+          sudo pip install -r requires/testing.txt -r requires/installation.txt codecov
           nosetests --with-coverage --cover-xml --cover-xml-file coverage.xml
           ./tmp/cc-test-reporter format-coverage -t coverage.py -o tmp/python3-coverage.json
           codecov
@@ -53,6 +53,19 @@ jobs:
           root: tmp
           paths:
             - python3-coverage.json
+
+  tox:
+    working_directory: ~/divak
+    docker:
+      - image: circleci/python:3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/divak/tmp
+      - run: |
+          mkdir build
+          sudo pip install tox
+          tox
 
   upload-coverage:
     working_directory: ~/divak
@@ -87,6 +100,9 @@ workflows:
           requires:
             - build
       - python3-test:
+          requires:
+            - build
+      - tox:
           requires:
             - build
       - upload-coverage:
