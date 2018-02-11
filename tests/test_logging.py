@@ -28,10 +28,10 @@ class ApiLoggerTests(testing.AsyncHTTPTestCase):
         return self.app
 
     def test_that_logger_is_created_if_missing(self):
-        self.assertNotIn(divak.api.Logger.__name__,
-                         self.log_manager.loggerDict)
+        logger_name = 'divak.api.Logger'
+        self.assertNotIn(logger_name, self.log_manager.loggerDict)
         self.fetch('/nologger')
-        self.assertIn(divak.api.Logger.__name__, self.log_manager.loggerDict)
+        self.assertIn(logger_name, self.log_manager.loggerDict)
 
     def test_that_logger_is_retained_if_set(self):
         self.assertNotIn('my.custom.logger', self.log_manager.loggerDict)

@@ -44,7 +44,7 @@ class RequestIdPropagationTests(testing.AsyncHTTPTestCase):
 
     def test_that_log_messages_have_request_ids(self):
         recorder = divak.testing.RecordingLogHandler()
-        logger = logging.getLogger('TracedHandler')
+        logger = logging.getLogger('tests.application.TracedHandler')
         logger.addHandler(recorder)
 
         request_id = str(uuid.uuid4())

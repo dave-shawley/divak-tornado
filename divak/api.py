@@ -187,10 +187,8 @@ class Logger(divak.internals.DivakTagged, web.RequestHandler):
     you are using :class:`.Application` in your application's class list.
 
     The ``logger`` attribute is set in :meth:`.prepare` and will wrap
-    an existing ``logger`` attribute or create a new one using the class
-    name as the logger name.  You *SHOULD* create an appropriately named
-    :class:`logging.Logger` instance in your :meth:`initialize` method
-    to effectively use this class.
+    an existing ``logger`` attribute or create a new one using the self's
+    class module and class name as the logger name.
 
     .. attribute:: logger
 
@@ -203,16 +201,14 @@ class Logger(divak.internals.DivakTagged, web.RequestHandler):
         self._logging_context = {}
         super(Logger, self).__init__(*args, **kwargs)
 
-    def initialize(self):
-        self._logging_context.clear()
-        super(Logger, self).initialize()
-
     @gen.coroutine
     def prepare(self):
         if hasattr(self, 'logger'):
             logger = self.logger
         else:
-            logger = logging.getLogger(self.__class__.__name__)
+            full_name = '{}.{}'.format(self.__class__.__module__,
+                                       self.__class__.__name__)
+            logger = logging.getLogger(full_name)
         self.logger = logging.LoggerAdapter(logger, self._logging_context)
         self.add_divak_tag('divak_request_id', self.request.divak_request_id)
 
@@ -221,6 +217,16 @@ class Logger(divak.internals.DivakTagged, web.RequestHandler):
             yield maybe_future
 
     def add_divak_tag(self, name, value):
+        """
+        Add a name & value to the logging context.
+
+        :param str name: name to add to the logging context
+        :param value: value to add
+
+        If `value` is :data:`None`, then it is not added to the
+        logging context.
+
+        """
         super(Logger, self).add_divak_tag(name, value)
         if value is not None:
             self._logging_context[name] = value
