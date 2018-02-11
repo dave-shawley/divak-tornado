@@ -41,14 +41,6 @@ class Recorder(web.Application):
         """
 
 
-class AlwaysSampleSampler(object):
-    pass
-
-
-class RequestTracker(divak.internals.DivakTagged):
-    pass
-
-
 class RequestIdPropagator(object):
     """
     Propagates Request-IDs between services.
@@ -176,7 +168,7 @@ class HeaderRelayTransformer(object):
         return chunk
 
 
-class Logger(divak.internals.DivakTagged, web.RequestHandler):
+class Logger(web.RequestHandler):
     """
     Imbues a :class:`tornado.web.RequestHandler` with a contextual logger.
 
@@ -210,23 +202,9 @@ class Logger(divak.internals.DivakTagged, web.RequestHandler):
                                        self.__class__.__name__)
             logger = logging.getLogger(full_name)
         self.logger = logging.LoggerAdapter(logger, self._logging_context)
-        self.add_divak_tag('divak_request_id', self.request.divak_request_id)
+        self._logging_context['divak_request_id'] = (
+            self.request.divak_request_id)
 
         maybe_future = super(Logger, self).prepare()
         if maybe_future:  # pragma: no cover -- pure paranoia
             yield maybe_future
-
-    def add_divak_tag(self, name, value):
-        """
-        Add a name & value to the logging context.
-
-        :param str name: name to add to the logging context
-        :param value: value to add
-
-        If `value` is :data:`None`, then it is not added to the
-        logging context.
-
-        """
-        super(Logger, self).add_divak_tag(name, value)
-        if value is not None:
-            self._logging_context[name] = value

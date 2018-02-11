@@ -1,9 +1,3 @@
-class DivakTagged(object):
-
-    def add_divak_tag(self, name, value):
-        pass
-
-
 class IdentityTransformer(object):
     """Minimal tornado transform implementation."""
 

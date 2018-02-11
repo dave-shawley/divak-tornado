@@ -3,7 +3,7 @@ from tornado import web
 from divak import api
 
 
-class TracedHandler(api.RequestTracker, api.Logger, web.RequestHandler):
+class TracedHandler(api.Logger, web.RequestHandler):
 
     def get(self):
         status_code = int(self.get_query_argument('status', '200'))
@@ -23,8 +23,7 @@ class TracedHandler(api.RequestTracker, api.Logger, web.RequestHandler):
         self.finish('chunk two\n')
 
 
-class Application(api.Recorder, api.AlwaysSampleSampler,
-                  web.Application):
+class Application(api.Recorder, web.Application):
 
     def __init__(self, handlers=None, *args, **kwargs):
         if handlers is not None:

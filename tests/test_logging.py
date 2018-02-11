@@ -1,8 +1,6 @@
 import logging
 
-from tornado import httputil, testing, web
-import mock
-
+from tornado import testing, web
 import divak.api
 import tests.application
 
@@ -37,11 +35,3 @@ class ApiLoggerTests(testing.AsyncHTTPTestCase):
         self.assertNotIn('my.custom.logger', self.log_manager.loggerDict)
         self.fetch('/logger')
         self.assertIn('my.custom.logger', self.log_manager.loggerDict)
-
-    def test_that_none_is_not_a_valid_tag(self):
-        request = httputil.HTTPServerRequest(uri='http://example.com',
-                                             connection=mock.Mock())
-        handler = divak.api.Logger(self.app, request)
-        handler.add_divak_tag('tag', 'value')
-        handler.add_divak_tag('not-a-tag', None)
-        self.assertDictEqual(handler._logging_context, {'tag': 'value'})
