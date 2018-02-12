@@ -2,8 +2,12 @@ import logging
 import unittest
 
 from tornado import testing, web
+import mock
+import tornado.log
+
 import divak.api
 import divak.internals
+import divak.testing
 import tests.application
 
 
@@ -102,6 +106,56 @@ class LogInitializationTests(unittest.TestCase):
                 if isinstance(filter, divak.internals.DivakRequestIdFilter):
                     count += 1
             self.assertEqual(count, 1)
+
+
+class RequestIdLoggingTests(testing.AsyncHTTPTestCase):
+
+    def setUp(self):
+        super(RequestIdLoggingTests, self).setUp()
+        formatter = logging.Formatter(
+            '%(levelname)s\0%(message)s\0%(divak_request_id)s')
+        self.recorder = divak.testing.RecordingLogHandler()
+        self.recorder.setFormatter(formatter)
+        tornado.log.access_log.addHandler(self.recorder)
+
+    def get_app(self):
+        app = tests.application.Application()
+        app.add_divak_propagator(divak.api.RequestIdPropagator())
+        return app
+
+    def assert_that_request_id_was_logged(self, request_id, level=None):
+        if level is None:
+            level_name = mock.ANY
+        else:
+            level_name = logging.getLevelName(level)
+
+        for record in self.recorder.records:  # type: logging.LogRecord
+            if record.levelname != level_name:
+                continue
+            msg = self.recorder.format(record)
+            level, message, req_id = msg.split('\0')
+            if req_id == request_id:
+                break
+        else:
+            msg = ('tornado.log.access did not include '
+                   'Request-ID={} level={}').format(
+                request_id, 'ANY' if level is None else level_name)
+            self.fail(msg)
+
+    def test_that_request_ids_logged_in_access_log_for_successes(self):
+        response = self.fetch('/trace')
+        self.assert_that_request_id_was_logged(response.headers['Request-Id'],
+                                               level=logging.INFO)
+
+    def test_that_request_ids_logged_in_access_log_for_warnings(self):
+        response = self.fetch('/does-not-exist')
+        self.assert_that_request_id_was_logged(response.headers['Request-Id'],
+                                               level=logging.WARNING)
+
+    def test_that_request_ids_logged_in_access_log_for_errors(self):
+        response = self.fetch('/trace?raise&status=500')
+        self.assert_that_request_id_was_logged(response.headers['Request-Id'],
+                                               level=logging.ERROR)
 
 
 def logger_has_filter(logger, filter_class):

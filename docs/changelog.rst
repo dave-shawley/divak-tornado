@@ -2,6 +2,11 @@
 Release History
 ===============
 
+`Next Release`_
+---------------
+- Made ``divak_request_id`` attribute available in all log records.
+- Added logging of the divak request ID in Tornado access log.
+
 `0.0.2`_ (10 Feb 2018)
 ----------------------
 - Implemented correlation header relaying via

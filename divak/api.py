@@ -42,6 +42,23 @@ class Recorder(web.Application):
 
         """
 
+    def log_request(self, handler):
+        # extend tornado.web.Application.log_request to include the
+        # divak_request_id from the request
+        if handler.get_status() < 400:
+            log_method = tornado.log.access_log.info
+        elif handler.get_status() < 500:
+            log_method = tornado.log.access_log.warning
+        else:
+            log_method = tornado.log.access_log.error
+
+        request_time = 1000.0 * handler.request.request_time()
+        extra = {'divak_request_id': getattr(handler.request,
+                                             'divak_request_id', '')}
+        log_method("%d %s %.2fms", handler.get_status(),
+                   handler._request_summary(), request_time,
+                   extra=extra)
+
 
 class RequestIdPropagator(object):
     """
