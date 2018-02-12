@@ -2,6 +2,7 @@ import logging
 import uuid
 
 from tornado import gen, web
+import tornado.log
 
 import divak.internals
 
@@ -12,6 +13,7 @@ class Recorder(web.Application):
     def __init__(self, *args, **kwargs):
         super(Recorder, self).__init__(*args, **kwargs)
         self.add_transform(divak.internals.EnsureRequestIdTransformer)
+        divak.internals.initialize_logging()
 
     def set_divak_service(self, service_name):
         """
