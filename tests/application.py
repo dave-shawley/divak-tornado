@@ -8,13 +8,17 @@ class TracedHandler(api.Logger, web.RequestHandler):
     def get(self):
         status_code = int(self.get_query_argument('status', '200'))
         should_raise = self.get_query_argument('raise', None)
-        self.logger.debug('processing GET status=%d raise=%r',
-                          status_code, should_raise)
+        override_request_id = self.get_query_argument('override_id', None)
+        self.logger.debug('processing GET status=%d raise=%r override_id=%s',
+                          status_code, should_raise, override_request_id)
 
         if should_raise is not None:
             raise web.HTTPError(status_code)
 
         self.set_status(status_code)
+        if override_request_id is not None:
+            self.set_header('Request-Id',
+                            override_request_id or 'my-request-id')
 
         # this is the only good way to fully exercise the tornado
         # response processing stack

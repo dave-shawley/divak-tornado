@@ -158,6 +158,28 @@ class RequestIdLoggingTests(testing.AsyncHTTPTestCase):
                                                level=logging.ERROR)
 
 
+class InternalLoggerTests(unittest.TestCase):
+
+    def test_that_logger_creates_request_id_attribute(self):
+        logger = divak.internals.DivakLogger('logger')
+        record = logger.makeRecord('name', logging.INFO, '/file.py',
+                                   1, 'message', [], False)
+        self.assertIsNone(getattr(record, 'divak_request_id', None))
+
+        logger.handle(record)
+        self.assertIsNotNone(getattr(record, 'divak_request_id', None))
+
+    def test_that_filter_creates_request_id_attribute(self):
+        logger = divak.internals.DivakLogger('logger')
+        record = logger.makeRecord('name', logging.INFO, '/file.py',
+                                   1, 'message', [], False)
+        self.assertIsNone(getattr(record, 'divak_request_id', None))
+
+        filter_ = divak.internals.DivakRequestIdFilter()
+        should_log = bool(filter_.filter(record))
+        self.assertTrue(should_log)
+
+
 def logger_has_filter(logger, filter_class):
     """
     Will `logger` execute a filter of `filter_class`?

@@ -52,3 +52,7 @@ class RequestIdPropagationTests(testing.AsyncHTTPTestCase):
         self.assertGreater(len(recorder.records), 0)
         for record in recorder.records:
             self.assertEqual(record.divak_request_id, request_id)
+
+    def test_that_request_id_from_handler_is_honored(self):
+        response = self.fetch('/trace?override_id=foo')
+        self.assertEqual(response.headers['Request-Id'], 'foo')
