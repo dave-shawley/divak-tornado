@@ -71,14 +71,18 @@ def initialize_logging():
     """
     Ensure that LogRecords have a divak_request_id defined.
 
-    This is called during initialization to ensure that :class:`LogRecord`
-    instances will *always* have a ``divak_request_id`` property.  This
-    makes it possible to refer to the request id in your log formats.
+    This is called during initialization to ensure that
+    :class:`logging.LogRecord` instances will *always* have a
+    ``divak_request_id`` property.  This makes it possible to refer to
+    the request id in your log formats.
 
-    I apologize for the ugliness of this function.  Python 3.2+ makes this
-    pretty easy by providing a customizable LogRecord factory.  I had to
-    rely on setting the Logger class and then inserting a filter into
-    every active handler for earlier versions of Python.
+    Firstly, it installs a new :class:`logging.Logger` class by calling
+    :func:`logging.setLoggerClass` that sets the attribute in it's
+    :meth:`logging.Logger.makeRecord` method if it not already present.
+    Then it spins through the existing loggers and adds
+    :class:`.DivakRequestIdFilter` to any handler that doesn't already have
+    one.  This process ensures that new and existing loggers can refer to
+    the request id in log formats.
 
     """
     # First we need to insert our own logger class.  That is the

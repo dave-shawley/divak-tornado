@@ -104,11 +104,59 @@ execution), the class cannot use state unless it keeps a per-request store.
 This is the primary reason that the request ID is added directly to the
 request instance instead of simply tracking it in the transformer.
 
-Implementation Classes
+Logging
+=======
+The :class:`.Recorder` mix-in (over :class:`tornado.web.Application`) ensures
+that it is safe to refer to the ``%(divak_request_id)s`` in any log formatter.
+During initialization, the :class:`.Recorder` instance installs the
+:class:`~divak.internals.DivakLogger` class as the "logger class" by calling
+:func:`logging.setLoggerClass`.  Future calls to :func:`logging.getLogger`
+will return instances of :class:`~divak.internals.DivakLogger` which is a
+sub-class of :class:`logging.Logger`.  This makes the request ID available for
+logger instances created after the application is initialized but it doesn't
+address existing logger instances.
+
+A :class:`~divak.internals.DivakRequestIdFilter` instance is inserted into
+existing :class:`logging.Handler` instances so that any existing loggers can
+safely refer to the request ID in their messages as well.  This is done during
+application initialization after setting the logging class.  Existing loggers
+are visited via the :class:`logging.Manager` global instance.  If the assigned
+handlers do not have a :class:`~divak.internals.DivakRequestIdFilter`, then
+one is added to the filter chain.
+
+That makes it possible to refer to ``%(divak_request_id)s`` in log formats but
+it doesn't actually get the value into the log messages.  This is where the
+:class:`divak.api.Logger` mix-in comes into play.  It's raison d'êtra is to
+add ``self.logger`` to a :class:`~tornado.web.RequestHandler` instance but it
+does one other thing for you -- it inserts the
+``self.request.divak_request_id`` into the logging context for you.  This is
+what makes the request id available in log messages from your request
+handlers.
+
+The next place that we want the request ID to show up is in the Tornado access
+log lines.  :class:`.Recorder` re-implements
+:meth:`tornado.web.Application.log_request` so that it passes the current
+request ID into the Tornado logger.  What it does not do is add the request ID
+to the log format -- *you are required to do that if you wish*.
+
+Implementation Details
 ======================
+
+DivakLogger
+-----------
+.. autoclass:: divak.internals.DivakLogger
+   :members:
+
+DivakRequestIdFilter
+--------------------
+.. autoclass:: divak.internals.DivakRequestIdFilter
+   :members:
 
 HeaderRelayTransformer
 ----------------------
 .. autoclass:: divak.api.HeaderRelayTransformer
    :members:
 
+initialize_logging
+------------------
+.. autofunction:: divak.internals.initialize_logging
