@@ -56,10 +56,15 @@ class DivakLogger(logging.Logger):
     that the ``divak_request_id`` attribute is set on all records.
 
     """
-    def handle(self, record):
+
+    def makeRecord(self, name, level, fn, lno, msg, args, exc_info,
+                   func=None, extra=None, sinfo=None):
+        record = super(DivakLogger, self).makeRecord(
+            name, level, fn, lno, msg, args, exc_info, func=func,
+            extra=extra, sinfo=sinfo)
         if not hasattr(record, 'divak_request_id'):
             setattr(record, 'divak_request_id', '')
-        return logging.Logger.handle(self, record)
+        return record
 
 
 def initialize_logging():
