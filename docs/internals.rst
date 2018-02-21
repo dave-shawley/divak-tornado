@@ -137,7 +137,8 @@ The next place that we want the request ID to show up is in the Tornado access
 log lines.  :class:`.Recorder` re-implements
 :meth:`tornado.web.Application.log_request` so that it passes the current
 request ID into the Tornado logger.  What it does not do is add the request ID
-to the log format -- *you are required to do that if you wish*.
+to the log format -- *you are required to do that if you wish*.  See
+:ref:`request_logging` for the details.
 
 Implementation Details
 ======================

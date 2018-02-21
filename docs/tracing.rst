@@ -88,6 +88,9 @@ function can be overridden to anything you want by passing the
        "version": "0.0.0"
    }
 
+.. index:: Logging;Request ID
+.. _request_logging:
+
 Request Logging
 ---------------
 The :class:`divak.api.Recorder` class modifies the Python :mod:`logging`
@@ -119,3 +122,20 @@ following dictionary is passed as the ``extra`` parameter to the log method:
       'useragent': request.headers.get('User-Agent', '-'),
       'divak_request_id': getattr(request, 'divak_request_id', '-'),
    }
+
+If you want to insert the request ID into the access log, then you should
+modify the default log format to include it when you initialize the logging
+module:
+
+.. literalinclude:: ../examples/request_tracing.py
+   :pyobject: main
+   :caption: examples/request_tracing.py
+   :emphasize-lines: 4-5
+
+This will include the request ID on every log line that it is available on.
+The :class:`divak.api.Logger` mix-in ensures that it is available on it's
+``self.logger`` instance.  The :class:`divak.api.Recorder` class inserts the
+request id into access log entries as well.  Access logs entries from the
+example look like::
+
+   127.0.0.1 "GET /status" 200 "curl/7.54.0" 0.001341104507446289 {84DC5B74-752A-468F-A786-806696A5DE01}
