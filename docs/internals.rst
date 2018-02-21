@@ -14,8 +14,9 @@ log messages.  It is a simple concept and has a profound impact on your
 ability to trace a message through the internals of a service and through the
 entire system.  The implementation is spread throughout a few classes:
 
-- :class:`.HeaderRelayTransformer` ensures that a named request header is
-  stored as a first-class property on the request and then that the value is
+- :class:`.RequestIdPropagator` ensures that a named request header is
+  stored as a first-class property on the request
+- :class:`.HeaderRelayTransformer` then ensures that the property value is
   added as a response header of the same name
 - :class:`.Recorder` is a :class:`tornado.web.Application` mix-in that
   installs instances of the :class:`.HeaderRelayTransformer` when your
@@ -73,7 +74,7 @@ A few very important details about this sequence of events:
 
 * When the request handler instance is created in step 4, the request has not
   passed through the transform functions so:
-  
+
    - The request handler cannot rely on any information that is injected by a
      transformer inside of ``initialize``.
    - The request handler has a chance to modify the request instance before it
@@ -85,8 +86,9 @@ A few very important details about this sequence of events:
   created and initialized *after* the request is already finished and are
   never called again.
 * Since :meth:`~tornado.web.RequestHandler.prepare` is permitted to be
-  asynchronous, "shared-state transfomers" like ours can be called for
-  multiple active requests and **SHOULD** be completely stateless.
+  asynchronous, transformers need to be per-request instances or completely
+  stateless.  If ``prepare`` yields, then there could be parallel active
+  requests so the transformed *SHOULD NOT* contain state.
 
 There is a rather glaring omission in the sequence of events.  *When are the
 transform methods invoked?*  ``transform_first_chunk`` is called **BEFORE**
@@ -96,13 +98,13 @@ them*.  ``transform_chunk`` is called for each body chunk from within
 :meth:`~tornado.web.RequestHandler.write`.
 
 The extra wrinkle for the :class:`.HeaderRelayTransformer` is that the name of
-the header to relay is configurable so we cannot use a simple function.
-Instead, the instance itself implements ``__call__`` and a shared instance of
-the class is used as the transformer.  Since the same transformer instance is
-used for all requests and requests can be processed in parallel (asynchronous
-execution), the class cannot use state unless it keeps a per-request store.
-This is the primary reason that the request ID is added directly to the
-request instance instead of simply tracking it in the transformer.
+the header to relay is configurable so we cannot simply let Tornado create
+a class instance for us -- we need to get the header name into the transformer.
+Instead, :class:`.RequestIdPropagator` implements a factory method that
+returns a new :class:`.HeaderRelayTransformer` instance and installs the
+factory method as a transformer function.  The :class:`.HeaderRelayTransformer`
+instance inserts the *divak_request_id* property from the request into the
+response headers if it is set.
 
 Logging
 =======
