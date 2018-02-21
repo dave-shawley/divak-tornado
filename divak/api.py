@@ -43,8 +43,13 @@ class Recorder(web.Application):
         """
 
     def log_request(self, handler):
-        # extend tornado.web.Application.log_request to include the
-        # divak_request_id from the request
+        """
+        Override ``log_request`` to improve logging format.
+
+        :param tornado.web.RequestHandler handler: the handler that
+            processed the request
+
+        """
         if handler.get_status() < 400:
             log_method = tornado.log.access_log.info
         elif handler.get_status() < 500:
@@ -52,12 +57,17 @@ class Recorder(web.Application):
         else:
             log_method = tornado.log.access_log.error
 
-        request_time = 1000.0 * handler.request.request_time()
-        extra = {'divak_request_id': getattr(handler.request,
-                                             'divak_request_id', '')}
-        log_method("%d %s %.2fms", handler.get_status(),
-                   handler._request_summary(), request_time,
-                   extra=extra)
+        request = handler.request  # type: tornado.httpserver.HTTPRequest
+        args = {'remoteip': '127.0.0.1',
+                'status': handler.get_status(),
+                'elapsed': request.request_time(),
+                'method': request.method,
+                'uri': request.uri,
+                'useragent': request.headers.get('User-Agent', '-'),
+                'divak_request_id': getattr(request, 'divak_request_id', '-')}
+        log_method(
+            '{remoteip} "{method} {uri}" {status} "{useragent}" '
+            '{elapsed:.6f}'.format(**args), extra=args)
 
 
 class RequestIdPropagator(object):

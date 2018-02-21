@@ -88,3 +88,34 @@ function can be overridden to anything you want by passing the
        "version": "0.0.0"
    }
 
+Request Logging
+---------------
+The :class:`divak.api.Recorder` class modifies the Python :mod:`logging`
+module to ensure that you can use ``%(divak_request_id)s`` in log formats.
+It also overrides the :meth:`~tornado.web.Application.log_request` method and
+outputs something closer to a standard access log line using the following log
+format::
+   
+   $REMOTE-IP "$METHOD $URI" $STATUS "$USER-AGENT" $PROCESSING-TIME
+
+For example::
+
+   127.0.0.1 "GET /status" 200 "curl/7.54.0" 0.001341104507446289
+
+The ``$PROCESSING-TIME`` is in decimal seconds and the user-agent & request id
+portions both default to ``"-"`` if they are missing for some reason.  You can
+modify this behavior by overriding the method in your application class or by
+adding a custom formatting pattern to ``tornado.log.access_log``.  The
+following dictionary is passed as the ``extra`` parameter to the log method:
+
+.. code-block:: python
+
+   extra = {
+      'remoteip': '127.0.0.1',
+      'status': handler.get_status(),
+      'elapsed': request.request_time(),
+      'method': request.method,
+      'uri': request.uri,
+      'useragent': request.headers.get('User-Agent', '-'),
+      'divak_request_id': getattr(request, 'divak_request_id', '-'),
+   }
