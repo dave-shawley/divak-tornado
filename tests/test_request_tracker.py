@@ -12,11 +12,13 @@ class RequestIdPropagationTests(testing.AsyncHTTPTestCase):
 
     def get_app(self):
         self._app = tests.application.Application()
+        self.initial_transforms = self._app.transforms[:]
         self._app.add_divak_propagator(divak.api.RequestIdPropagator())
         return self._app
 
     def setUp(self):
         self._app = None
+        self.initial_transforms = None
         super(RequestIdPropagationTests, self).setUp()
 
     def test_that_request_id_header_is_generated(self):
@@ -29,9 +31,7 @@ class RequestIdPropagationTests(testing.AsyncHTTPTestCase):
         self.assertEqual(response.headers['request-id'], request_id)
 
     def test_that_response_header_generation_can_be_disabled(self):
-        self._app.transforms = [
-            t for t in self._app.transforms
-            if not isinstance(t, divak.api.HeaderRelayTransformer)]
+        self._app.transforms = self.initial_transforms
         self._app.add_divak_propagator(
             divak.api.RequestIdPropagator(value_factory=None))
         response = self.fetch('/trace')
@@ -44,7 +44,7 @@ class RequestIdPropagationTests(testing.AsyncHTTPTestCase):
 
     def test_that_log_messages_have_request_ids(self):
         recorder = divak.testing.RecordingLogHandler()
-        logger = logging.getLogger('TracedHandler')
+        logger = logging.getLogger('tests.application.TracedHandler')
         logger.addHandler(recorder)
 
         request_id = str(uuid.uuid4())
@@ -52,3 +52,7 @@ class RequestIdPropagationTests(testing.AsyncHTTPTestCase):
         self.assertGreater(len(recorder.records), 0)
         for record in recorder.records:
             self.assertEqual(record.divak_request_id, request_id)
+
+    def test_that_request_id_from_handler_is_honored(self):
+        response = self.fetch('/trace?override_id=foo')
+        self.assertEqual(response.headers['Request-Id'], 'foo')

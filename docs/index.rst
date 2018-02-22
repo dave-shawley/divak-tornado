@@ -5,6 +5,7 @@
 
    users-guide
    api
+   internals
    license
    contributing
    changelog

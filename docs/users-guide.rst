@@ -13,7 +13,9 @@ Your application needs to inherit from :class:`.Recorder` to use divák.
 The :class:`.Recorder` class provides methods to inject observers into the
 request processing pipeline.  The only notable functionality that it provides
 is to ensure that every request has a ``divak_request_id`` attribute that is
-set to :data:`None` by default.  Beyond that, it is a strictly *opt-in*
-interface in that you must explicitly add observers to enable functionality.
+set to :data:`None` by default and that the attribute is added to the logging
+context when writing to :obj:`tornado.log.access_log`.  Beyond that, it is a
+strictly *opt-in* interface in that you must explicitly add observers to
+enable functionality.
 
 .. include:: tracing.rst

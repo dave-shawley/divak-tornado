@@ -3,11 +3,13 @@ import logging
 
 from tornado import ioloop, web
 import divak.api
+import tornado.log
 
 
-class StatusHandler(web.RequestHandler):
+class StatusHandler(divak.api.Logger, web.RequestHandler):
 
     def get(self):
+        self.logger.info('processing get request')
         self.set_status(200)
         self.set_header('Content-Type', 'application/json')
         self.write(json.dumps({'service': 'my-service',
@@ -25,9 +27,15 @@ class MyApplication(divak.api.Recorder, web.Application):
         self.add_divak_propagator(divak.api.RequestIdPropagator())
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO,
-                        format='%(levelname)1.1s - %(name)s: %(message)s')
+def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format=('%(levelname)1.1s - %(name)s: %(message)s '
+                '{%(divak_request_id)s}'))
     app = MyApplication(debug=True)
     app.listen(8000)
     ioloop.IOLoop.current().start()
+
+
+if __name__ == '__main__':
+    main()
