@@ -57,11 +57,10 @@ class DivakLogger(logging.Logger):
 
     """
 
-    def makeRecord(self, name, level, fn, lno, msg, args, exc_info,
-                   func=None, extra=None, sinfo=None):
-        record = super(DivakLogger, self).makeRecord(
-            name, level, fn, lno, msg, args, exc_info, func=func,
-            extra=extra, sinfo=sinfo)
+    def makeRecord(self, *args, **kwargs):
+        # Using args & kwargs to work around signature differences
+        # between python versions
+        record = super(DivakLogger, self).makeRecord(*args, **kwargs)
         if not hasattr(record, 'divak_request_id'):
             setattr(record, 'divak_request_id', '')
         return record
