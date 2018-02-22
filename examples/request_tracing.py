@@ -3,7 +3,6 @@ import logging
 
 from tornado import ioloop, web
 import divak.api
-import tornado.log
 
 
 class StatusHandler(divak.api.Logger, web.RequestHandler):
