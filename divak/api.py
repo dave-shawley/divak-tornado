@@ -180,7 +180,7 @@ class HeaderRelayTransformer(object):
         :param bool include_footers: should footers be included?
         :return: the status code, headers, and chunk to use as a tuple
 
-        This method will inject ``request.divak_request_id` into
+        This method will inject ``request.divak_request_id`` into
         `headers` if the value is not :data:`None`.  The remaining
         parameters are passed through as-is.
 
